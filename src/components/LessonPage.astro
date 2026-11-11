@@ -1,0 +1,332 @@
+---
+/**
+ * LessonPage — full document for a course's dedicated page (linked from its
+ * deck slide). Normal scrolling page: no snap, no deck script.
+ * Layout: Bootstrap 5 grid & utilities; chrome reuses global.css classes
+ * (.slide__title, .slide__eyebrow, .label). Content from src/data/lessons.ts.
+ */
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Header from './Header.astro';
+import { profile, ui, labUrl, type Lang } from '../data/content';
+import { lessonUi, type Lesson } from '../data/lessons';
+
+
+interface Props {
+  lesson: Lesson;
+  lang: Lang;
+  /** Per-lesson hero background (imported via astro:assets in the page wrapper). */
+  heroImage: ImageMetadata;
+}
+
+const { lesson, lang, heroImage } = Astro.props;
+const t = (x: { zh: string; en: string }) => x[lang];
+const base = (import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL).replace(/\/$/, '');
+const here = lang === 'zh' ? `${base}/lessons/${lesson.slug}/` : `${base}/en/lessons/${lesson.slug}/`;
+const otherLangUrl = lang === 'zh' ? `${base}/en/lessons/${lesson.slug}/` : `${base}/lessons/${lesson.slug}/`;
+const deckSlide = `${lang === 'zh' ? `${base}/` : `${base}/en/`}#${lesson.slug}`;
+const labHref = lang === 'zh' ? labUrl : `${labUrl}en/`;
+
+const pageTitle =
+  lang === 'zh' ? `${t(lesson.name)} · 課程 · 杜岳華` : `${t(lesson.name)} · Courses · Yueh-Hua Tu`;
+const siteUrl = Astro.site ? Astro.site.toString().replace(/\/$/, '') : '';
+---
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-TW' : 'en'} class="no-snap">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={t(lesson.tagline)} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={t(lesson.tagline)} />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content={`${siteUrl}${heroImage.src}`} />
+    <link rel="canonical" href={here} />
+    <link rel="alternate" hreflang={lang === 'zh' ? 'en' : 'zh'} href={otherLangUrl} />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B57A4'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='800' font-size='14' fill='%23fff' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+
+  <body class="lesson-body" data-accent={lesson.accent}>
+    <Header lang={lang} toggleHref={otherLangUrl} />
+
+    {/* ---------- Hero: user-designed course background ---------- */}
+    <header class="lesson-hero">
+      <div class="hero-bg" aria-hidden="true">
+        <Image src={heroImage} alt="" widths={[640, 1024, 1376]} sizes="100vw" loading="eager" class="hero-img" />
+      </div>
+      <div class="lesson-wrap hero-content">
+        <a class="crumb no-print" href={deckSlide}>← {t(ui.lessonNav)}</a>
+        <p class="label hero-eyebrow">{t(lessonUi.heroEyebrow)}</p>
+        <h1 class="slide__title lesson-title">{t(lesson.name)}</h1>
+        <p class="hero-tagline muted">{t(lesson.tagline)}</p>
+      </div>
+    </header>
+
+    <main class="lesson-wrap">
+      {/* ---------- 課程目標 ---------- */}
+      <section class="lesson-goal">
+        <p class="slide__eyebrow"><span class="num">{lang === 'zh' ? '目標' : 'GOAL'}</span><span aria-hidden="true">—</span><span class="label-text">{t(lessonUi.goalLabel)}</span></p>
+        <p class="goal-text">{t(lesson.goal)}</p>
+      </section>
+
+      {/* ---------- 課程地圖 ---------- */}
+      <section class="lesson-modules">
+        <p class="slide__eyebrow"><span class="num">{lang === 'zh' ? '地圖' : 'MAP'}</span><span aria-hidden="true">—</span><span class="label-text">{t(lessonUi.courseMap)}</span></p>
+        {
+          lesson.modules.map((m) => (
+            <article class="module">
+              <div class="row g-4 g-lg-5">
+                <div class={m.case ? 'col-12 col-lg-5' : 'col-12'}>
+                  <p class="label module-weeks">
+                    {m.num} · {m.weeks}
+                  </p>
+                  <h2 class="module-name">{t(m.name)}</h2>
+                  <p class="module-summary muted">{t(m.summary)}</p>
+                </div>
+                {m.case && (
+                  <div class="col-12 col-lg-7">
+                    <aside class="case-card">
+                      <p class="case-meta">
+                        <span class="case-week">{m.case.week}</span>
+                        <span class="label">{t(lessonUi.clinicalCase)}</span>
+                      </p>
+                      <h3 class="case-title">{t(m.case.title)}</h3>
+                      <p class="case-body muted mb-0">{t(m.case.body)}</p>
+                    </aside>
+                  </div>
+                )}
+              </div>
+            </article>
+          ))
+        }
+      </section>
+    </main>
+
+    {/* ---------- Slim closing band ---------- */}
+    <footer class="lesson-footer">
+      <div class="lesson-wrap footer-row">
+        <a href={deckSlide}>← {t(lessonUi.backToCourses)}</a>
+        <a href={labHref}>{t(lessonUi.meetLab)} ↗</a>
+        <p class="footer-id mb-0">
+          <strong>{t(profile.name)}</strong> · {t(profile.affiliation)}
+        </p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style>
+  .lesson-body {
+    --accent: var(--sky);
+    --accent-heading: var(--sky-deep);
+  }
+
+  .lesson-body[data-accent='leaf'] {
+    --accent: var(--leaf);
+    --accent-heading: var(--leaf-deep);
+  }
+
+  .lesson-wrap {
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  /* ---------- Hero ---------- */
+  .lesson-hero {
+    position: relative;
+    min-height: 88svh;
+    display: flex;
+    align-items: center;
+    padding: calc(3.5rem + var(--section-pad)) 0 var(--section-pad);
+    overflow: hidden;
+  }
+
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Scrim: soften the top under the fixed header, fade into paper at the bottom */
+  .lesson-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 32%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.82) 88%, var(--paper));
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 2;
+  }
+
+  .crumb {
+    display: inline-block;
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--gray-1);
+    margin-bottom: clamp(2rem, 6vh, 4rem);
+  }
+
+  .crumb:hover {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+
+  .hero-eyebrow {
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+
+  .lesson-title {
+    color: var(--accent-heading);
+    max-width: 16ch;
+  }
+
+  .hero-tagline {
+    max-width: 52ch;
+    font-size: var(--text-subtitle);
+    font-weight: 500;
+  }
+
+  /* ---------- Goal ---------- */
+  .lesson-goal {
+    padding-block: clamp(3rem, 7vh, 5rem) clamp(2rem, 5vh, 3.5rem);
+  }
+
+  .goal-text {
+    font-size: var(--text-subtitle);
+    font-weight: 500;
+    line-height: 1.55;
+    max-width: 44ch;
+    color: var(--ink);
+  }
+
+  /* ---------- Modules ---------- */
+  .module {
+    padding-block: clamp(1.75rem, 4.5vh, 3rem);
+  }
+
+  .module-weeks {
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .module-name {
+    font-size: clamp(1.35rem, 2.6vw, 1.9rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--accent-heading);
+    margin-bottom: 0.6rem;
+  }
+
+  .module-summary {
+    max-width: 40ch;
+  }
+
+  /* Featured clinical case — leaf-green marks the biomedical thread site-wide */
+  .case-card {
+    height: 100%;
+    background: var(--leaf-wash);
+    border-left: 3px solid var(--leaf);
+    padding: clamp(1.25rem, 2.5vw, 1.75rem);
+  }
+
+  .case-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .case-week {
+    font-size: var(--text-label);
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--leaf-deep);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .case-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 0.4rem;
+  }
+
+  .case-body {
+    max-width: 56ch;
+  }
+
+  /* ---------- Footer band ---------- */
+  .lesson-footer {
+    margin-top: clamp(2rem, 6vh, 4rem);
+    padding-block: 1.1rem;
+    background: var(--sky-deep);
+    color: #d9ebfc;
+  }
+
+  .footer-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 1rem 2rem;
+    font-size: var(--text-small);
+  }
+
+  .lesson-footer a {
+    color: var(--paper);
+    text-decoration-color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+  }
+
+  .lesson-footer a:hover {
+    text-decoration-color: var(--paper);
+  }
+
+  .lesson-footer .footer-id {
+    margin-left: auto;
+  }
+
+  .lesson-footer .footer-id strong {
+    color: var(--paper);
+  }
+
+  @media (max-width: 767px) {
+    .lesson-footer .footer-id {
+      margin-left: 0;
+    }
+  }
+
+  @media print {
+    .lesson-hero {
+      min-height: auto;
+    }
+
+    .hero-bg {
+      display: none;
+    }
+  }
+</style>

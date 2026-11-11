@@ -1,0 +1,22 @@
+{
+  "name": "tmu-courses-site",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Courses by Yueh-Hua Tu — Taipei Medical University",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && cp -r Catalan-numbers dist/",
+    "preview": "astro preview",
+    "check": "astro check"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.2.6",
+    "astro": "^5.13.0",
+    "bootstrap": "^5.3.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "puppeteer-core": "^25.9.0"
+  }
+}

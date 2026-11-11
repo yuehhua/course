@@ -1,0 +1,26 @@
+---
+/**
+ * Slide — full-viewport section wrapper for the scroll-snap deck.
+ *
+ * Props:
+ *   id     — anchor id (also used by header nav / keyboard nav)
+ *   num    — section number, e.g. "04"
+ *   label  — uppercase eyebrow label, e.g. "PROJECTS"
+ */
+interface Props {
+  id: string;
+  num: string;
+  label: string;
+}
+
+const { id, num, label } = Astro.props;
+---
+
+<section id={id} class="slide" data-slide data-num={num} aria-label={`${num} ${label}`}>
+  <p class="slide__eyebrow">
+    <span class="num">{num}</span>
+    <span aria-hidden="true">—</span>
+    <span class="label-text">{label}</span>
+  </p>
+  <slot />
+</section>

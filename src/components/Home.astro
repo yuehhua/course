@@ -1,0 +1,400 @@
+---
+/**
+ * Home — the course deck (cover + one slide per course), rendered per
+ * language by thin page wrappers. Moved from the ISB Lab site (2026-11-11).
+ * Layout: Bootstrap 5 grid & utilities. Brand: our tokens (sky/leaf) in global.css.
+ */
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@fontsource-variable/inter';
+import '../styles/global.css';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Slide from '../layouts/Slide.astro';
+import Header from './Header.astro';
+import dmBg from '../assets/discrete_math_Gemini.png';
+import dsaBg from '../assets/data_structure_algo_Gemini.png';
+import bioBg from '../assets/bioinfo_Gemini.png';
+import { ui, profile, cover, footer, labUrl } from '../data/content';
+import {
+  lessonUi,
+  discreteMath,
+  dataStructuresAlgorithms,
+  bioinformatics,
+  smartHealthcareBigData,
+  type Lesson,
+} from '../data/lessons';
+
+interface Props {
+  lang: 'zh' | 'en';
+}
+
+const { lang } = Astro.props;
+const t = (x: { zh: string; en: string }) => x[lang];
+
+/* One deck slide per lesson: user-designed background where available,
+   goal + module map, link to the full lesson page when it exists. */
+const lessonSlides: { lesson: Lesson; bg: ImageMetadata | null; linked: boolean }[] = [
+  { lesson: discreteMath, bg: dmBg, linked: true },
+  { lesson: dataStructuresAlgorithms, bg: dsaBg, linked: true },
+  { lesson: bioinformatics, bg: bioBg, linked: true },
+  { lesson: smartHealthcareBigData, bg: null, linked: false },
+];
+
+const pageTitle = lang === 'zh' ? '課程 · 杜岳華 · 臺北醫學大學' : 'Courses · Yueh-Hua Tu · Taipei Medical University';
+const pageDesc = t(cover.sub);
+const base = (import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL).replace(/\/$/, '');
+const home = lang === 'zh' ? `${base}/` : `${base}/en/`;
+const otherLangUrl = lang === 'zh' ? `${base}/en/` : `${base}/`;
+const labHref = lang === 'zh' ? labUrl : `${labUrl}en/`;
+---
+
+<!doctype html>
+<html lang={lang === 'zh' ? 'zh-TW' : 'en'}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:type" content="website" />
+    <link rel="canonical" href={home} />
+    <link rel="alternate" hreflang={lang === 'zh' ? 'en' : 'zh'} href={otherLangUrl} />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230B57A4'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='800' font-size='14' fill='%23fff' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E"
+    />
+  </head>
+
+  <body>
+    <Header lang={lang} />
+
+    <p class="scroll-hint no-print" data-hint aria-hidden="true">{t(ui.scrollHint)}</p>
+
+    <main>
+      {/* ---------------------------------------------- 01 COVER */}
+      <Slide id="cover" num="01" label={t(ui.coverEyebrow)}>
+        <p class="hero-kicker">{t(cover.kicker)}</p>
+        <h1 class="hero-title">{t(cover.title)}</h1>
+        <p class="hero-sub muted">{t(cover.sub)}</p>
+
+        <p class="hero-byline d-flex flex-wrap gap-1 gap-md-3 border-top pt-3 mb-4">
+          <span><strong>{t(profile.name)}, {profile.degree}</strong> · {t(profile.title)}</span>
+          <span class="hero-affil muted">{t(profile.affiliation)}</span>
+        </p>
+
+        <div class="d-flex flex-wrap gap-3">
+          <a class="btn btn-sky btn-deck" href={`${home}#${lessonSlides[0].lesson.slug}`}>{t(ui.lessonNav)} ↓</a>
+          <a class="btn btn-outline-sky btn-deck" href={labHref}>{t(lessonUi.meetLab)} ↗</a>
+        </div>
+      </Slide>
+
+      {/* ---------------------------------------------- 02–05 LESSONS (one slide per course) */}
+      {
+        lessonSlides.map(({ lesson, bg, linked }, i) => (
+          <Slide id={lesson.slug} num={String(i + 2).padStart(2, '0')} label={t(ui.lessonNav)}>
+            {bg && (
+              <div class="lesson-nature" aria-hidden="true">
+                <Image class="lesson-bg-img" src={bg} alt="" loading="lazy" widths={[640, 1024, 1376]} sizes="100vw" />
+              </div>
+            )}
+            <div class="lesson-main">
+              <div class="lesson-slide-body">
+                <h2 class="slide__title lesson-slide-title">{t(lesson.name)}</h2>
+                <p class="lesson-slide-goal muted">{t(lesson.goal)}</p>
+                <ul class="lesson-chips d-flex flex-wrap gap-2 ps-0 mb-0">
+                  {lesson.modules.map((m) => (
+                    <li>
+                      <span class="chip-num">{m.num}</span> {t(m.name)}
+                    </li>
+                  ))}
+                </ul>
+                {linked && (
+                  <a
+                    class="btn btn-outline-sky btn-deck mt-4"
+                    href={lang === 'zh' ? `${base}/lessons/${lesson.slug}/` : `${base}/en/lessons/${lesson.slug}/`}
+                  >
+                    {t(lessonUi.viewCourse)} ↗
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Footer anchored to the bottom of the last slide — visible without an extra scroll */}
+            {i === lessonSlides.length - 1 && (
+              <footer class="site-footer">
+                <div class="footer-inner d-flex flex-wrap gap-2 gap-md-4 align-items-baseline">
+                  <p class="mb-0">
+                    <strong>{t(profile.name)}</strong> · <span class="muted">{t(profile.affiliation)}</span>
+                  </p>
+                  <a href={`mailto:${profile.email}`}>{profile.email}</a>
+                  <a href={labHref}>{profile.labShort} ↗</a>
+                  <p class="ms-md-auto mb-0">{t(footer.copyright)}</p>
+                </div>
+              </footer>
+            )}
+          </Slide>
+        ))
+      }
+    </main>
+
+    <script>
+      // Deck behavior: active-slide tracking (header nav glow), keyboard navigation.
+      const slides = Array.from(document.querySelectorAll<HTMLElement>('[data-slide]'));
+      const navLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.site-nav a[data-nav-group]'));
+      const hint = document.querySelector<HTMLElement>('[data-hint]');
+
+      let idx = 0;
+
+      function render(): void {
+        const current = slides[idx]?.id;
+        navLinks.forEach((a) => {
+          const on = a.dataset.navGroup!.split(',').includes(current);
+          if (on) a.setAttribute('aria-current', 'true');
+          else a.removeAttribute('aria-current');
+        });
+        hint?.classList.toggle('is-visible', idx === 0);
+      }
+
+      const io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              idx = slides.indexOf(e.target as HTMLElement);
+              render();
+            }
+          }
+        },
+        { rootMargin: '-45% 0px -45% 0px', threshold: 0 }
+      );
+      slides.forEach((s) => io.observe(s));
+      render();
+
+      function go(i: number): void {
+        const target = slides[Math.max(0, Math.min(slides.length - 1, i))];
+        target?.scrollIntoView({ behavior: 'smooth' });
+      }
+
+      window.addEventListener('keydown', (e: KeyboardEvent) => {
+        const next = ['ArrowDown', 'ArrowRight', 'PageDown', ' '];
+        const prev = ['ArrowUp', 'ArrowLeft', 'PageUp'];
+        if (next.includes(e.key)) {
+          e.preventDefault();
+          go(idx + 1);
+        } else if (prev.includes(e.key)) {
+          e.preventDefault();
+          go(idx - 1);
+        } else if (e.key === 'Home') {
+          e.preventDefault();
+          go(0);
+        } else if (e.key === 'End') {
+          e.preventDefault();
+          go(slides.length - 1);
+        }
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  /* ---------- Scroll hint (right side, cover slide only) ---------- */
+  .scroll-hint {
+    position: fixed;
+    right: var(--gutter);
+    bottom: 1.25rem;
+    z-index: 90;
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gray-2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s var(--ease-out);
+  }
+
+  .scroll-hint.is-visible {
+    opacity: 1;
+    animation: nudge 2.2s var(--ease-out) infinite;
+  }
+
+  @keyframes nudge {
+    0%,
+    100% {
+      translate: 0 0;
+    }
+    50% {
+      translate: 0 3px;
+    }
+  }
+
+  @media (max-width: 767px) {
+    .scroll-hint {
+      display: none;
+    }
+  }
+
+  /* ---------- Cover ---------- */
+  .hero-kicker {
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--sky);
+    margin-bottom: 1rem;
+  }
+
+  .hero-title {
+    font-size: var(--text-display);
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    margin-bottom: 1.25rem;
+    max-width: 14ch;
+    color: var(--sky-deep);
+  }
+
+  .hero-sub {
+    font-size: var(--text-subtitle);
+    font-weight: 500;
+    max-width: 40ch;
+    margin-bottom: 2rem;
+  }
+
+  .hero-byline {
+    font-size: var(--text-small);
+    max-width: 62ch;
+  }
+
+  .hero-affil {
+    flex-basis: 100%;
+  }
+
+  /* ---------- Lesson slides (one per course) ---------- */
+  .lesson-nature {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* Left-heavy scrim: text column reads clean, the designed motifs stay visible right */
+  .lesson-nature::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.85) 0%,
+      rgba(255, 255, 255, 0.5) 45%,
+      rgba(255, 255, 255, 0.12) 80%
+    );
+  }
+
+  .lesson-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  /* Content centers in the space ABOVE the footer (only the last slide has one) */
+  .lesson-main {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 0;
+  }
+
+  .lesson-slide-body {
+    position: relative;
+    z-index: 1;
+    max-width: 60ch;
+  }
+
+  .lesson-slide-title {
+    max-width: 16ch;
+  }
+
+  .lesson-slide-goal {
+    max-width: 44ch;
+    font-size: var(--text-subtitle);
+    font-weight: 500;
+    margin-bottom: clamp(1rem, 2.5vh, 1.75rem);
+  }
+
+  .lesson-chips {
+    list-style: none;
+  }
+
+  .lesson-chips li {
+    border: var(--hairline);
+    background: rgba(255, 255, 255, 0.78);
+    padding: 0.45em 0.9em;
+    font-size: var(--text-small);
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .lesson-chips .chip-num {
+    font-weight: 800;
+    color: var(--sky);
+    margin-right: 0.15em;
+  }
+
+  /* ---------- Footer: deep sky band at the bottom of the last slide ---------- */
+  .site-footer {
+    position: relative;
+    z-index: 1;
+    background: var(--sky-deep);
+    color: #d9ebfc;
+    /* Full-bleed: escape the slide's horizontal padding */
+    margin: 0 calc(var(--gutter) * -1);
+    padding: 1rem var(--gutter) 0.9rem;
+  }
+
+  .footer-inner {
+    font-size: var(--text-small);
+  }
+
+  .footer-inner strong {
+    color: var(--paper);
+  }
+
+  .footer-inner .muted {
+    color: #9cc3ee;
+  }
+
+  .footer-inner a {
+    color: var(--paper);
+    text-decoration-color: rgba(255, 255, 255, 0.4);
+  }
+
+  .footer-inner a:hover {
+    text-decoration-color: var(--paper);
+  }
+</style>
+
+<style is:global>
+  /* Slide-level backgrounds. Slide.astro's <section> roots don't carry this
+     component's data-astro-cid scope, so these must be global to match. */
+  #cover {
+    background:
+      radial-gradient(52rem 30rem at 108% -12%, rgba(116, 192, 252, 0.28), transparent 60%),
+      radial-gradient(40rem 26rem at -14% 112%, rgba(116, 192, 252, 0.2), transparent 62%),
+      linear-gradient(178deg, var(--sky-wash) 0%, var(--paper) 58%);
+  }
+
+  /* Lesson slides carry their own designed background images; the one
+     still waiting for art gets a flat sky wash. */
+  #smart-healthcare-big-data {
+    background: var(--sky-wash);
+  }
+
+  /* The footer lives inside the last slide, anchored to its bottom edge */
+  main > .slide:last-child {
+    padding-bottom: 0;
+  }
+</style>

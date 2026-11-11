@@ -1,0 +1,364 @@
+/* ============================================================
+   ISB Lab — Global Design Tokens & Base Styles
+   Sky-blue primary × leaf-green accents: open, bright, energetic,
+   professionally grounded. Nature elements as line art + washes.
+   ============================================================ */
+
+:root {
+  /* Color — sky-blue primary, leaf-green secondary */
+  --paper: #ffffff;
+  --sky-deep: #0b57a4; /* headings, footer */
+  --sky: #1971c2; /* buttons, emphasis, active states */
+  --sky-pale: #74c0fc; /* light accents */
+  --sky-wash: #e7f5ff; /* sky-tinted backgrounds */
+  --leaf: #40a02b; /* green accents */
+  --leaf-deep: #2b8a3e;
+  --leaf-soft: #d3f0da; /* leaf fill in line art */
+  --leaf-wash: #f2faf4; /* green-tinted backgrounds */
+  --ink: #16283c; /* body text — blue-black */
+  --gray-1: #44566b; /* secondary text */
+  --gray-2: #7d8ea1; /* auxiliary text */
+  --hairline-color: #bbd9f5;
+  --hairline-soft-color: #dbeafe;
+
+  /* Typography — Latin first, CJK glyphs fall through to system fonts */
+  --font-body: 'Inter Variable', 'Helvetica Neue', Arial, 'PingFang TC',
+    'Noto Sans CJK TC', 'Microsoft JhengHei', sans-serif;
+
+  /* Fluid type scale */
+  --text-display: clamp(2.75rem, 8vw, 6rem);
+  --text-title: clamp(1.75rem, 4.5vw, 3.25rem);
+  --text-subtitle: clamp(1.125rem, 2.2vw, 1.5rem);
+  --text-body: clamp(1rem, 1.4vw, 1.125rem);
+  --text-small: 0.875rem;
+  --text-label: 0.75rem;
+
+  /* Structure */
+  --hairline: 1px solid var(--sky-pale);
+  --hairline-soft: 1px solid var(--hairline-soft-color);
+  --gutter: clamp(1.25rem, 5vw, 6rem);
+  --section-pad: clamp(2.5rem, 5vh, 4.5rem);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 0.6s;
+
+  /* Bootstrap integration: tint its borders with our sky hairline color */
+  --bs-border-color: #bbd9f5;
+  --bs-link-color: #1971c2;
+  --bs-link-color-rgb: 25, 113, 194;
+  --bs-body-font-family: var(--font-body);
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Slide deck: viewport-level scroll snapping.
+     Below desktop width, slides legitimately exceed the viewport,
+     so relax to proximity to avoid trapping content mid-slide. */
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+}
+
+@media (max-width: 1023px) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+}
+
+/* Long-form pages (lesson pages) opt out of deck snapping via <html class="no-snap"> */
+html.no-snap {
+  scroll-snap-type: none;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img,
+svg,
+video {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--sky);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 3px;
+}
+
+::selection {
+  background: var(--sky);
+  color: var(--paper);
+}
+
+/* ---------- Slide chrome ---------- */
+.slide {
+  position: relative;
+  min-height: 100svh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  padding: calc(3.5rem + var(--section-pad)) var(--gutter) var(--section-pad);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-top: var(--hairline-soft);
+}
+
+.slide:first-of-type {
+  border-top: none;
+}
+
+/* Section eyebrow: number + label, e.g. "04 — PROJECTS" */
+.slide__eyebrow {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-1);
+  margin-bottom: clamp(1rem, 2.5vh, 2rem);
+}
+
+.slide__eyebrow .num {
+  font-weight: 800;
+  color: var(--sky);
+}
+
+.slide__title {
+  font-size: var(--text-title);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin-bottom: clamp(1rem, 2vh, 1.75rem);
+  max-width: 18ch;
+  color: var(--sky-deep);
+}
+
+.slide__body {
+  max-width: 72ch;
+}
+
+/* ---------- Utilities ---------- */
+.label {
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gray-2);
+}
+
+.muted {
+  color: var(--gray-1);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Patterns ---------- */
+
+/* Bootstrap button variants in our palette */
+.btn-sky {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--sky);
+  --bs-btn-border-color: var(--sky);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--sky-deep);
+  --bs-btn-hover-border-color: var(--sky-deep);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--sky-deep);
+  --bs-btn-active-border-color: var(--sky-deep);
+  --bs-btn-focus-shadow-rgb: 25, 113, 194;
+}
+
+.btn-outline-sky {
+  --bs-btn-color: var(--sky);
+  --bs-btn-border-color: var(--sky);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--sky-deep);
+  --bs-btn-hover-border-color: var(--sky-deep);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--sky-deep);
+  --bs-btn-active-border-color: var(--sky-deep);
+  --bs-btn-focus-shadow-rgb: 25, 113, 194;
+}
+
+/* Deck button typography on top of Bootstrap .btn */
+.btn-deck {
+  font-size: var(--text-small);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* Badge chip — leaf-green "live" state */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  border: 1px solid var(--leaf);
+  padding: 0.5em 0.9em;
+  font-size: var(--text-label);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  max-width: 100%;
+  color: var(--leaf-deep);
+}
+
+.chip:hover {
+  background: var(--leaf);
+  color: var(--paper);
+  text-decoration: none;
+}
+
+/* Long badge text (e.g. the NeurIPS chip) must wrap on narrow screens —
+   nowrap text overflows its capped box and expands the page scroll area. */
+@media (max-width: 560px) {
+  .chip {
+    white-space: normal;
+  }
+}
+
+.chip .pulse {
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse 1.8s var(--ease-out) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* Metric pair — big number, small label */
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+}
+
+.metric .value {
+  font-size: clamp(1.4rem, 2.6vw, 2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--sky-deep);
+}
+
+.metric .key {
+  font-size: var(--text-label);
+  letter-spacing: 0.08em;
+  color: var(--gray-2);
+}
+
+/* Row list — shared timeline / history rows */
+.row-list {
+  list-style: none;
+}
+
+.row-list li {
+  display: grid;
+  grid-template-columns: minmax(5.5rem, 8rem) 1fr;
+  gap: 1rem;
+  padding: 0.6em 0;
+  border-top: var(--hairline-soft);
+  font-size: var(--text-small);
+}
+
+.row-list li:first-child {
+  border-top: none;
+}
+
+.row-list .period {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--sky-deep);
+}
+
+.row-list .what {
+  color: var(--gray-1);
+}
+
+@media (max-width: 480px) {
+  .row-list li {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
+/* ---------- Motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ---------- Print: one slide per page ---------- */
+@media print {
+  html {
+    scroll-snap-type: none;
+  }
+
+  .slide {
+    min-height: auto;
+    page-break-after: always;
+    padding: 1.5cm 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

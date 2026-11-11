@@ -1,0 +1,113 @@
+---
+/**
+ * Header — fixed top bar: wordmark, nav (desktop), language toggle.
+ * Nav: one Lesson entry covering all lesson slides (glows while any is
+ * active — the deck script matches via data-nav-group) + a link out to ISB Lab.
+ */
+import { ui, labUrl } from '../data/content';
+import { lessonOrder } from '../data/lessons';
+
+interface Props {
+  lang: 'zh' | 'en';
+  /** Lang-toggle target for non-deck pages (e.g. the same lesson in the other language). */
+  toggleHref?: string;
+}
+
+const { lang, toggleHref } = Astro.props;
+const t = (x: { zh: string; en: string }) => x[lang];
+const base = (import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL).replace(/\/$/, '');
+const home = lang === 'zh' ? `${base}/` : `${base}/en/`;
+const otherLangHref = toggleHref ?? (lang === 'zh' ? `${base}/en/` : `${base}/`);
+/* On the deck the toggle preserves the current slide via the hash; on a lesson page it just swaps routes. */
+const toggleAttrs = toggleHref ? {} : { onclick: 'this.href += location.hash' };
+const labHref = lang === 'zh' ? labUrl : `${labUrl}en/`;
+---
+
+<header class="site-header no-print">
+  <a class="wordmark" href={home}>
+    {lang === 'zh' ? '杜岳華' : 'Yueh-Hua Tu'}<span> · {t(ui.coverEyebrow)}</span>
+  </a>
+
+  <nav class="site-nav d-none d-lg-flex gap-3 gap-xl-4" aria-label={lang === 'zh' ? '區塊導覽' : 'Sections'}>
+    <a href={`${home}#${lessonOrder[0]}`} data-nav-group={lessonOrder.join(',')}>{t(ui.lessonNav)}</a>
+    <a href={labHref}>{t(ui.labNav)} ↗</a>
+  </nav>
+
+  <a class="lang-toggle" href={otherLangHref} hreflang={lang === 'zh' ? 'en' : 'zh'} {...toggleAttrs}>
+    {t(ui.langToggle)}
+  </a>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 0.9rem var(--gutter);
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: var(--hairline);
+  }
+
+  .wordmark {
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.06em;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--sky-deep);
+  }
+
+  .wordmark span {
+    font-weight: 300;
+  }
+
+  .site-nav a {
+    font-size: var(--text-label);
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--gray-1);
+    padding: 0.25em 0;
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.25s var(--ease-out),
+      border-color 0.25s var(--ease-out),
+      text-shadow 0.25s var(--ease-out);
+  }
+
+  .site-nav a:hover {
+    color: var(--ink);
+    border-bottom-color: var(--ink);
+  }
+
+  /* Current slide: its nav entry lights up with a sky glow (set by the deck script). */
+  .site-nav a[aria-current='true'] {
+    color: var(--sky-deep);
+    border-bottom-color: var(--sky);
+    text-shadow: 0 0 14px rgba(25, 113, 194, 0.55);
+  }
+
+  .lang-toggle {
+    font-size: var(--text-label);
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-decoration: none;
+    border: 1px solid var(--sky);
+    color: var(--sky);
+    padding: 0.45em 0.9em;
+    white-space: nowrap;
+  }
+
+  .lang-toggle:hover {
+    background: var(--sky-deep);
+    border-color: var(--sky-deep);
+    color: var(--paper);
+  }
+</style>
